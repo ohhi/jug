@@ -275,20 +275,28 @@ function rmDublicateSeqs ( seqs )
 
 function autoShift ( seq )
 {
-	var max = -1;
-	var max_i = -1;
-	seq.forEach(function ( t, i )
+	var is = [];
+	seq.forEach(function ( a, i )
 	{
-		if ( max < t )
-		{
-			max = t;
-			max_i = i;
-		}
+		is.push( i )
 	});
+	var seql = seq.length;
+	is.sort(function ( s1, s2 )
+	{
+		for ( var i=0; i<seql; i++ )
+		{
+			var v1 = seq[(i+s1) % seql];
+			var v2 = seq[(i+s2) % seql];
+			if ( v1 < v2 ) return 1;
+			if ( v2 < v1 ) return -1;
+		}
+		return 0;
+	});
+	
 	var sseq = [];
 	seq.forEach(function ( t, i )
 	{
-		sseq[(i-max_i+seq.length) % seq.length] = t
+		sseq[(i-is[0]+seq.length) % seq.length] = t
 	});
 	return sseq;
 }
