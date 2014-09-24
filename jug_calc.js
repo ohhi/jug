@@ -258,6 +258,41 @@ function wSortSeqs ( seqs, weights )
 	});
 }
 
+function rmDublicateSeqs ( seqs )
+{
+	var sh = {};
+	var rseqs = [];
+	seqs.forEach(function ( seq )
+	{
+		if ( !sh[seq.toString()] )
+		{
+			sh[seq.toString()] = true;
+			rseqs.push( seq );
+		}
+	});
+	return rseqs;
+}
+
+function autoShift ( seq )
+{
+	var max = -1;
+	var max_i = -1;
+	seq.forEach(function ( t, i )
+	{
+		if ( max < t )
+		{
+			max = t;
+			max_i = i;
+		}
+	});
+	var sseq = [];
+	seq.forEach(function ( t, i )
+	{
+		sseq[(i-max_i+seq.length) % seq.length] = t
+	});
+	return sseq;
+}
+
 function pickRandomSeq ( seqs, weights )
 {
 	var wsa = [];

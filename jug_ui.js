@@ -315,6 +315,12 @@ function updateSeq ()
 			seqs = ( findSeqs( spos, epos, seql, seql ) )
 		}
 		
+		for ( var i=0; i<seqs.length; i++ )
+		{
+			seqs[i] = autoShift( seqs[i] );
+		}
+		seqs = rmDublicateSeqs( seqs );
+		
 		var sseqs = wSortSeqs( seqs, ws );
 		var rand = pickRandomSeq( seqs, ws );
 		var str = "Random seq: " + rand + "<br>All ("+seqs.length+"):<br>";
