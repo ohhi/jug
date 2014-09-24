@@ -343,6 +343,8 @@ function calcNormalCumulation( a )
 
 function findSeqs( state_arr1, state_arr2, min_d, max_d )
 {
+	var timeout = (new Date().getTime()) + 1000;
+
 	min_d = min_d > 0 ? min_d : 1;
 	max_d = max_d > min_d ? max_d : min_d;
 
@@ -400,6 +402,12 @@ function findSeqs( state_arr1, state_arr2, min_d, max_d )
 	
 	while ( q.getLength() > 0 )
 	{
+		if ( (new Date()).getTime() > timeout )
+		{
+			alert("Timeout reached. Not all results are available.");
+			break;
+		}
+	
 		var sn = q.popFront();
 		
 		if ( seen( sn ) )

@@ -1,6 +1,5 @@
-function validate ()
+function parseBallCnt ()
 {
-	var res = true;
 	var balls_str = document.getElementById("balls").value;
 	var balls = parseInt( balls_str );
 	if ( balls_str && !balls && balls !== 0 )
@@ -17,85 +16,112 @@ function validate ()
 	{
 		document.getElementById("balls_err").innerHTML = "";
 	}
+	return balls;
+}
 
-	var max_str = document.getElementById("max").value ;
+function parseMaxT ( balls )
+{
+	if ( !balls )
+	{
+		document.getElementById("max_err").innerHTML = "Can't parse without ball count.";
+		return null;
+	}
+
+	max_str = document.getElementById("max").value ;
 	var max = parseInt( max_str );
 	
 	if ( max_str && !max && max !== 0 )
 	{
 		document.getElementById("max_err").innerHTML = "Invalid value. Must be a number.";
-		res = false;
 	}
 	else if ( max_str && max < 0 )
 	{
 		document.getElementById("max_err").innerHTML = "Maximum height must be at least zero.";
-		res = false;
 	}
-	else if ( max_str && balls_str && max < balls )
+	else if ( max_str && max < balls )
 	{
 		document.getElementById("max_err").innerHTML = "Maximum height must be at least as big as the amount of balls.";
-		res = false;
 	}
 	else
 	{
 		document.getElementById("max_err").innerHTML = "";
 	}
-	
+	return max;
+}
+
+function parseSeql ()
+{
 	var seql_str = document.getElementById("seql").value;
-	var seql = parseInt( seql_str );
-
-	if ( seql_str && !seql && seql !== 0 )
-	{
-		document.getElementById("seql_err").innerHTML = "Invalid value. Must be a number.";
-		res = false;
-	}
-	else if ( seql_str && seql < 1 )
-	{
-		document.getElementById("seql_err").innerHTML = "Sequense length must be at least one.";
-		res = false;
-	}
-	else
-	{
-		document.getElementById("seql_err").innerHTML = "";
-	}
-
-	var fl = true;
-	var ws_str = document.getElementById("ws").value;
+	var seql = null;
 	try
 	{
-		var ws = JSON.parse( ws_str );
+		seql = JSON.parse( seql_str );
 	}
-	catch ( err )
+	catch ( err ){}
+	if ( (!seql && seql_str) || typeof seql !== "number" && ( !Array.isArray( seql) || seql.length !== 2 || !(seql[0] > 0) || !(seql[1] > 0)  ) )
 	{
-		res = false;
-	}
-	if ( !Array.isArray( ws ) )
-	{
-		document.getElementById("ws_err").innerHTML = "Weights must be a vector of numbers.";
-		res = false;
+		document.getElementById("seql_err").innerHTML = "Invalid value. Must be a number or pair of numbers.";
 	}
 	else
 	{
-		if ( ws.length !== max + 1 )
+		if ( typeof seql === "number" )
+		{
+			seql = [seql, seql]
+		}
+		document.getElementById("seql_err").innerHTML = "";
+	}
+	return seql;
+}
+
+function parseWeights ( max_t )
+{
+	if ( !max_t )
+	{
+		document.getElementById("ws_err").innerHTML = "Can't parse without max height.";
+		return null;
+	}
+
+	var ws_str = document.getElementById("ws").value;
+	var ws = null;
+	try
+	{
+		ws = JSON.parse( ws_str );
+	}
+	catch ( err ){}
+	
+	if ( !ws_str )
+	{
+		ws = [];
+		for ( var i=0; i<=max_t; i++ )
+		{
+			ws.push(1);
+		}
+		document.getElementById("ws_err").innerHTML = "";
+	}
+	else if ( !Array.isArray( ws ) )
+	{
+		document.getElementById("ws_err").innerHTML = "Weights must be a vector of numbers.";
+	}
+	else
+	{
+		if ( ws.length !== max_t + 1 )
 		{
 			document.getElementById("ws_err").innerHTML = "Invalid quantity of weight values.";
-			res = false;
 		}
 		else
 		{
+			var fl = true;
 			for ( var i=0; i < ws.length; i++ )
 			{
 				if ( typeof ws[i] !== "number" )
 				{
 					document.getElementById("ws_err").innerHTML = "Invalid weight: " + ws[i];
-					res = false;
 					fl = false;
 					break;
 				}
 				if ( typeof ws[i] <= 0 )
 				{
 					document.getElementById("ws_err").innerHTML = "Weights must be positive: " + ws[i];
-					res = false;
 					fl = false;
 					break;
 				}
@@ -106,10 +132,38 @@ function validate ()
 			}
 		}
 	}
+	return ws;
+}
+
+function validate ()
+{
+	var res = true;
+
+	var ball_cnt = parseBallCnt();
+	if ( !ball_cnt )
+	{
+		res = false;
+	}
+	
+	var max_t = parseMaxT( ball_cnt );
+	if ( !max_t )
+	{
+		res = false;
+	}
+	
+	if ( !parseSeql() )
+	{
+		res = false;
+	}
+
+	if ( !parseWeights( max_t ) )
+	{
+		res = false;
+	}
 
 	var fl = true;
 	var spos_str = document.getElementById("spos").value;
-	if ( spos_str !== "" )
+	if ( spos_str )
 	{
 		try
 		{
@@ -128,9 +182,9 @@ function validate ()
 		}
 		else
 		{
-			if ( spos.length !== max )
+			if ( spos.length !== max_t )
 			{
-				document.getElementById("spos_err").innerHTML = "Invalid quantity of weight values.";
+				document.getElementById("spos_err").innerHTML = "Invalid quantity of values.";
 				res = false;
 			}
 			else
@@ -147,7 +201,7 @@ function validate ()
 					}
 					tot += spos[i];
 				}
-				if ( tot != balls )
+				if ( fl && tot != ball_cnt )
 				{
 					document.getElementById("spos_err").innerHTML = "There should be as many ones as there is balls.";
 					res = false;
@@ -160,10 +214,14 @@ function validate ()
 			}
 		}
 	}
+	else
+	{
+		document.getElementById("spos_err").innerHTML = "";
+	}
 	
 	var fl = true;
 	var epos_str = document.getElementById("epos").value;
-	if ( epos_str !== "" )
+	if ( epos_str )
 	{
 		try
 		{
@@ -180,9 +238,9 @@ function validate ()
 		}
 		else
 		{
-			if ( epos.length !== max )
+			if ( epos.length !== max_t )
 			{
-				document.getElementById("epos_err").innerHTML = "Invalid quantity of weight values.";
+				document.getElementById("epos_err").innerHTML = "Invalid quantity of values.";
 				res = false;
 			}
 			else
@@ -199,7 +257,7 @@ function validate ()
 					}
 					tot += epos[i];
 				}
-				if ( tot != balls )
+				if ( fl && tot != ball_cnt )
 				{
 					document.getElementById("epos_err").innerHTML = "There should be as many ones as there is balls.";
 					res = false;
@@ -211,6 +269,10 @@ function validate ()
 				}
 			}
 		}
+	}
+	else
+	{
+		document.getElementById("epos_err").innerHTML = "";
 	}
 	return res;
 }
@@ -225,8 +287,7 @@ function play ()
 
 	var balls = parseInt( document.getElementById("balls").value );
 	var max = parseInt(document.getElementById("max").value );
-	var seql = parseInt(document.getElementById("seql").value );
-	var ws = JSON.parse( document.getElementById("ws").value );
+	var ws = parseWeights( max );
 
 	if ( balls && max && seql && ws )
 	{
@@ -269,8 +330,8 @@ function updateSeq ()
 
 	var balls = parseInt( document.getElementById("balls").value );
 	var max = parseInt(document.getElementById("max").value );
-	var seql = parseInt(document.getElementById("seql").value );
-	var ws = JSON.parse( document.getElementById("ws").value );
+	var seql = parseSeql();
+	var ws = parseWeights( max );
 	
 	var spos_str = document.getElementById("spos").value;
 	var spos = null;
@@ -285,6 +346,12 @@ function updateSeq ()
 		epos = JSON.parse( epos_str );
 	}
 	
+	var time = (new Date().getTime()) + 10000;
+	function timeout ()
+	{
+		return (new Date().getTime()) > time;
+	}
+
 	if ( balls && max && seql  )
 	{
 		var sarrs = getAllStates( balls, max );
@@ -293,26 +360,29 @@ function updateSeq ()
 		{
 			sarrs.forEach(function ( sarr )
 			{
-				seqs = seqs.concat( findSeqs( sarr, sarr, seql, seql ) )
+				if ( timeout() ) return;
+				seqs = seqs.concat( findSeqs( sarr, sarr, seql[0], seql[1] ) )
 			});
 		}
 		else if ( !spos )
 		{
 			sarrs.forEach(function ( sarr )
 			{
-				seqs = seqs.concat( findSeqs( sarr, epos, seql, seql ) )
+				if ( timeout() ) return;
+				seqs = seqs.concat( findSeqs( sarr, epos, seql[0], seql[1] ) )
 			});
 		}
 		else if ( !epos )
 		{
 			sarrs.forEach(function ( sarr )
 			{
-				seqs = seqs.concat( findSeqs( spos, sarr, seql, seql ) )
+				if ( timeout() ) return;
+				seqs = seqs.concat( findSeqs( spos, sarr, seql[0], seql[1] ) )
 			});
 		}
 		else
 		{
-			seqs = ( findSeqs( spos, epos, seql, seql ) )
+			seqs = ( findSeqs( spos, epos, seql[0], seql[1] ) )
 		}
 		
 		for ( var i=0; i<seqs.length; i++ )
