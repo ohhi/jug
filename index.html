@@ -1,0 +1,83 @@
+<hmtl>
+<head>
+<script src="jug_calc.js"></script>
+<script src="jug_ui.js"></script>
+</head>
+<body>
+<table>
+<tr>
+<td>
+<table>
+<tr>
+<td>Balls:</td>
+<td><input onchange="updateSeq();" id="balls" value="3"></input></td>
+<td><span id="balls_err" style="color:red"></span></td>
+</tr>
+<tr>
+<td>Max height:</td>
+<td><input onchange="updateSeq();" id="max" value="5"></input></td>
+<td><span id="max_err" style="color:red"></span></td>
+</tr>
+<tr>
+<td>
+Seq length:
+</td>
+<td>
+<input onchange="updateSeq();" id="seql" value="3"></input>
+</td>
+<td>
+<span id="seql_err" style="color:red"></span>
+</td>
+</tr>
+<tr>
+<td>
+Weights:
+</td>
+<td>
+<input onchange="updateSeq();" id="ws" value="[1,1,1,1,1,1]"></input>
+</td>
+<td>
+<span id="ws_err" style="color:red"></span>
+</td>
+</tr>
+<tr>
+<td>
+Statring position:
+</td>
+<td>
+<input onchange="updateSeq();" id="spos" value=""></input>
+</td>
+<td>
+<span id="spos_err" style="color:red"></span>
+</td>
+</tr>
+<tr>
+<td>
+End position:
+</td>
+<td>
+<input onchange="updateSeq();" id="epos" value=""></input>
+</td>
+<td>
+<span id="epos_err" style="color:red"></span>
+</td>
+</tr>
+<tr>
+<td>
+<button onClick="updateSeq();">Gen</button>
+</td>
+<td>
+<button onClick="play();">Play inf</button>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<span id="seq"></span>
+</td>
+</tr>
+</table>
+</body>
+</html>
